@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+    <p class="eyebrow">{{ site_name }} &middot; Movies, Anime & Entertainment Reimagined</p>
+    <h1>Ekrandagi so'nggi voqealar</h1>
+    <p class="hero-sub">Kino, multfilm va anime olamidan tanlangan yangiliklar — har biri uchun sifat bahosi, janrlar va qayerda qonuniy tomosha qilish mumkinligi haqida ma'lumot bilan.</p>
+</section>
+
+{% macro section(id, heading, emoji, items, more_url) %}
+<section class="section-block">
+    <div class="section-heading">
+        <h2>{{ emoji }} {{ heading }}</h2>
+        {% if more_url %}<a href="{{ more_url }}">Barchasi →</a>{% endif %}
+    </div>
+    {% if items %}
+    <div class="section-scroll">
+        {% for t in items %}
+            {% include "_title_card.html" %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">Bu bo'limda hozircha kontent yo'q.</p>
+    {% endif %}
+</section>
+{% endmacro %}
+
+{{ section('trend', 'Trend', '🔥', sections.trend, None) }}
+{{ section('yangi', 'Yangi', '🆕', sections.yangi, None) }}
+{{ section('top', 'Reytingi yuqori', '⭐', sections.top, None) }}
+{{ section('kino', categories.kino, '🎬', sections.kino, url_for('public.by_category', category='kino')) }}
+{{ section('anime', categories.anime, '🎌', sections.anime, url_for('public.by_category', category='anime')) }}
+{{ section('multfilm', categories.multfilm, '🎨', sections.multfilm, url_for('public.by_category', category='multfilm')) }}
+
+{% endblock %}

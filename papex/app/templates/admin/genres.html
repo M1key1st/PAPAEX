@@ -1,0 +1,44 @@
+{% extends "admin/layout.html" %}
+{% block title %}Janrlar — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Janrlar</h1>
+</section>
+
+<form class="admin-form" method="post" style="max-width: 400px; flex-direction: row; align-items: flex-end; gap: 12px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row" style="flex-grow: 1;">
+        <label for="name">Yangi janr nomi</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    <button type="submit" class="btn-primary">Qo'shish</button>
+</form>
+
+<table class="admin-table" style="margin-top: 24px;">
+    <thead><tr><th>Nom</th><th>Slug</th><th></th></tr></thead>
+    <tbody>
+        {% for g in genres %}
+        <tr>
+            <td>
+                <form method="post" action="{{ url_for('admin.genre_edit', genre_id=g['id']) }}" style="display: flex; gap: 8px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="name" value="{{ g['name'] }}" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px;">
+                    <button type="submit" class="btn-ghost" style="padding: 6px 12px;">Saqlash</button>
+                </form>
+            </td>
+            <td class="num">{{ g['slug'] }}</td>
+            <td class="admin-row-actions">
+                <form method="post" action="{{ url_for('admin.genre_delete', genre_id=g['id']) }}" onsubmit="return confirm('O\'chirilsinmi?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="link-danger">O'chirish</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="empty">Janrlar yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

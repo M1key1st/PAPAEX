@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}{{ title['name'] }} ({{ title['year'] or '' }}) — {{ site_name }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block canonical %}{{ canonical }}{% endblock %}
+{% block og_type %}video.movie{% endblock %}
+{% block og_title %}{{ title['name'] }} — {{ site_name }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_image %}
+{% if title['poster_local'] %}
+<meta property="og:image" content="{{ request.url_root.rstrip('/') }}{{ url_for('static', filename=title['poster_local']) }}">
+{% elif title['poster_path'] %}
+<meta property="og:image" content="{{ title['poster_path']|tmdb_image('w780') }}">
+{% endif %}
+{% endblock %}
+{% block twitter_title %}{{ title['name'] }} — {{ site_name }}{% endblock %}
+{% block twitter_description %}{{ meta_description }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">{{ json_ld|safe }}</script>
+{% endblock %}
+
+{% block content %}
+
+{% if title['backdrop_local'] or title['backdrop_path'] %}
+<div class="detail-backdrop-wrap">
+    <img class="detail-backdrop" src="{{ url_for('static', filename=title['backdrop_local']) if title['backdrop_local'] else title['backdrop_path']|tmdb_image('w1280') }}" alt="">
+    <div class="detail-backdrop-fade"></div>
+</div>
+{% endif %}
+
+<article class="detail">
+    <p class="eyebrow"><a href="{{ url_for('public.by_category', category=title['category']) }}">{{ categories[title['category']] }}</a> &middot; {{ title['year'] or '' }}{% if title['country'] %} &middot; {{ title['country'] }}{% endif %}</p>
+
+    <div class="detail-media">
+        {% if title['poster_local'] %}
+        <img class="detail-poster" src="{{ url_for('static', filename=title['poster_local']) }}" alt="{{ title['name'] }} poster">
+        {% elif title['poster_path'] %}
+        <img class="detail-poster" src="{{ title['poster_path']|tmdb_image('w500') }}" alt="{{ title['name'] }} poster">
+        {% endif %}
+        <div>
+            <h1 class="detail-title">{% if not title['poster_local'] and not title['poster_path'] %}{{ title['poster_note'] or '🎬' }} {% endif %}{{ title['name'] }}</h1>
+            {% if title['tagline'] %}<p class="hero-sub">{{ title['tagline'] }}</p>{% endif %}
+
+            <ul class="meta-list">
+                {% if title['director'] %}<li><strong>Rejissyor:</strong> {{ title['director'] }}</li>{% endif %}
+                {% if title['runtime'] %}<li><strong>Davomiyligi:</strong> {{ title['runtime'] }} daqiqa</li>{% endif %}
+                {% if title['release_date'] %}<li><strong>Chiqarilgan sana:</strong> {{ title['release_date'] }}</li>{% endif %}
+                <li><strong>Ko'rishlar:</strong> {{ title['views_count'] }}</li>
+                {% if title['imdb_id'] %}<li><strong>IMDb:</strong> <a href="https://www.imdb.com/title/{{ title['imdb_id'] }}/" target="_blank" rel="noopener nofollow">{{ title['imdb_id'] }}</a></li>{% endif %}
+                {% if title['tmdb_id'] %}<li><strong>TMDB:</strong> <a href="https://www.themoviedb.org/movie/{{ title['tmdb_id'] }}" target="_blank" rel="noopener nofollow">#{{ title['tmdb_id'] }}</a></li>{% endif %}
+            </ul>
+
+            {% if genres %}
+            <div class="chip-row">
+                {% for g in genres %}
+                <a class="chip" href="{{ url_for('public.search', genre=g['slug']) }}">{{ g['name'] }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="quality-panel">
+        <div class="ticket">
+            <span class="ticket-score">{{ title['quality_score'] }}</span>
+            <span class="ticket-max">/10</span>
+        </div>
+        <div class="quality-meta">
+            <p class="quality-heading">Sifat bahosi</p>
+            <p class="quality-detail">Video sifati: <strong>{{ title['quality_label'] }}</strong></p>
+            <div class="score-bar">
+                <div class="score-bar-fill" style="width: {{ (title['quality_score'] / 10 * 100) | round(0, 'floor') }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-body">
+        <p>{{ title['summary'] }}</p>
+    </div>
+
+    {% if cast %}
+    <h2>Aktyorlar</h2>
+    <div class="cast-row">
+        {% for c in cast %}
+        <div class="cast-item">
+            {% if c['profile_path'] %}
+            <img class="cast-avatar" src="{{ c['profile_path']|tmdb_image('w185') }}" alt="{{ c['actor_name'] }}">
+            {% else %}
+            <div class="cast-avatar">🎭</div>
+            {% endif %}
+            <p class="cast-name">{{ c['actor_name'] }}</p>
+            {% if c['character_name'] %}<p class="cast-character">{{ c['character_name'] }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="action-bar" data-title-id="{{ title['id'] }}">
+        <button type="button" class="action-btn js-vote {{ 'active' if user_vote == 1 else '' }}" data-value="1">
+            👍 <span class="action-count js-like-count">{{ title['likes_count'] }}</span>
+        </button>
+        <button type="button" class="action-btn js-vote dislike {{ 'active' if user_vote == -1 else '' }}" data-value="-1">
+            👎 <span class="action-count js-dislike-count">{{ title['dislikes_count'] }}</span>
+        </button>
+        <button type="button" class="action-btn js-bookmark {{ 'active' if is_bookmarked else '' }}">
+            {{ '🔖 Saqlangan' if is_bookmarked else '🔖 Saqlash' }}
+        </button>
+    </div>
+
+    <div class="share-row" style="margin-bottom: 32px;">
+        <a href="https://t.me/share/url?url={{ canonical }}&text={{ title['name'] }}" target="_blank" rel="noopener" title="Telegram">✈️</a>
+        <a href="https://api.whatsapp.com/send?text={{ title['name'] }} - {{ canonical }}" target="_blank" rel="noopener" title="WhatsApp">📱</a>
+        <a href="https://twitter.com/intent/tweet?url={{ canonical }}&text={{ title['name'] }}" target="_blank" rel="noopener" title="X / Twitter">🐦</a>
+    </div>
+
+    {% if title['trailer_url'] %}
+    <h2>Treyler</h2>
+    <p style="margin-bottom: 32px;"><a class="btn-ghost" href="{{ title['trailer_url'] }}" target="_blank" rel="noopener">▶ Treylerni ko'rish</a></p>
+    {% endif %}
+
+    <section class="watch-section">
+        <h2>Qayerda tomosha qilish mumkin</h2>
+        {% if links %}
+        <ul class="watch-list">
+            {% for link in links %}
+            <li>
+                <a href="{{ link['url'] }}" target="_blank" rel="noopener">
+                    <span class="watch-platform">{{ link['platform'] }}</span>
+                    <span class="watch-arrow">↗</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty">Hozircha rasmiy platforma havolasi qo'shilmagan.</p>
+        {% endif %}
+    </section>
+
+    {% if related %}
+    <h2>O'xshash kontent</h2>
+    <div class="related-grid">
+        {% for t in related %}
+            {% include "_title_card.html" %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if article and article.status == 'published' %}
+    <!-- Article Top Ad -->
+    {% if ads_enabled is defined and ads_enabled and ad_article_top %}
+    <div class="ad-container ad-article-top">
+        {{ ad_article_top|safe }}
+    </div>
+    {% endif %}
+
+    <section class="article-section" style="margin: 32px 0; padding: 24px; background: #f8f9fa; border-radius: 8px;">
+        <h2>{{ article.title }}</h2>
+        <p class="text-muted small">{{ article.created_at[:10] if article.created_at else '' }}</p>
+        <div>{{ article.content|safe }}</div>
+        <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="btn btn-sm btn-outline-primary mt-2">
+            To'liq o'qish →
+        </a>
+    </section>
+
+    <!-- Article Bottom Ad -->
+    {% if ads_enabled is defined and ads_enabled and ad_article_bottom %}
+    <div class="ad-container ad-article-bottom">
+        {{ ad_article_bottom|safe }}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if recently_viewed %}
+    <h2>Yaqinda ko'rilganlar</h2>
+    <div class="related-grid">
+        {% for t in recently_viewed %}
+            {% include "_title_card.html" %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('public.home') }}" class="back-link">← Barcha yangiliklarga qaytish</a>
+</article>
+
+{% endblock %}

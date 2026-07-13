@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+{% block title %}Sozlamalar — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Sayt sozlamalari</h1>
+</section>
+
+<form class="admin-form" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+        <label for="site_name">Sayt nomi</label>
+        <input type="text" id="site_name" name="site_name" value="{{ settings.get('site_name', '') }}" required>
+    </div>
+    <div class="form-row">
+        <label for="site_description">Sayt tavsifi (SEO uchun)</label>
+        <textarea id="site_description" name="site_description" rows="3">{{ settings.get('site_description', '') }}</textarea>
+    </div>
+    <div class="form-row">
+        <label for="footer_text">Footer matni</label>
+        <textarea id="footer_text" name="footer_text" rows="2">{{ settings.get('footer_text', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Saqlash</button>
+    </div>
+</form>
+
+<h2 style="margin-top: 40px;">TMDB integratsiyasi</h2>
+<p>
+    Holat:
+    {% if tmdb_enabled %}
+    <span class="badge badge-success">Yoqilgan</span>
+    {% else %}
+    <span class="badge badge-warning">O'chirilgan (API kalit yo'q)</span>
+    {% endif %}
+</p>
+<p class="form-hint">TMDB kalitini yoqish uchun serverdagi <code>.env</code> faylida <code>TMDB_API_KEY</code> qiymatini kiriting va serverni qayta ishga tushiring.</p>
+
+{% endblock %}

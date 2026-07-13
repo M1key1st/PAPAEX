@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Saqlanganlar — {{ site_name }}{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <p class="eyebrow">Shaxsiy ro'yxat</p>
+    <h1>Saqlangan kontent</h1>
+    <p class="hero-sub">Bookmark qilingan kino, anime va multfilmlar shu yerda ko'rinadi (brauzeringizga bog'liq).</p>
+</section>
+
+<section class="grid">
+    {% for t in titles %}
+        {% include "_title_card.html" %}
+    {% else %}
+    <p class="empty">Hozircha hech narsa saqlanmagan. Har bir sahifada 🔖 tugmasini bosing.</p>
+    {% endfor %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "admin/layout.html" %}
+{% block title %}{% if mode == 'new' %}Yangi kontent{% else %}Tahrirlash{% endif %} — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">
+        {% if mode == 'new' %}Yangi kontent qo'shish{% else %}"{{ title['name'] }}" — tahrirlash{% endif %}
+    </h1>
+    <a href="{{ url_for('admin.movies_list') }}" class="btn-ghost">← Ro'yxatga qaytish</a>
+</section>
+
+{% if tmdb_enabled is not defined or True %}
+<div class="tmdb-search-box">
+    <label for="tmdb_q">🔎 TMDB'dan qidirish (nomini yozing — poster, tavsif, janr, aktyor, rejissyor avtomatik to'ldiriladi)</label>
+    <input type="text" id="tmdb_q" placeholder="masalan: Dune Part Two" autocomplete="off">
+    <div class="tmdb-results" id="tmdb_results"></div>
+</div>
+{% endif %}
+
+<form class="admin-form" method="post" id="movie-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="tmdb_id" id="tmdb_id" value="{{ form.get('tmdb_id', '') if form else '' }}">
+    <input type="hidden" name="imdb_id" id="imdb_id" value="{{ form.get('imdb_id', '') if form else '' }}">
+    <input type="hidden" name="poster_path" id="poster_path" value="{{ form.get('poster_path', '') if form else '' }}">
+    <input type="hidden" name="backdrop_path" id="backdrop_path" value="{{ form.get('backdrop_path', '') if form else '' }}">
+    <input type="hidden" name="poster_local" id="poster_local" value="{{ form.get('poster_local', '') if form else '' }}">
+    <input type="hidden" name="backdrop_local" id="backdrop_local" value="{{ form.get('backdrop_local', '') if form else '' }}">
+
+    <div class="form-row">
+        <label for="name">Nom *</label>
+        <input type="text" id="name" name="name" value="{{ form.get('name', '') if form else '' }}" required>
+    </div>
+
+    <div class="form-row">
+        <label for="original_name">Original nom</label>
+        <input type="text" id="original_name" name="original_name" value="{{ form.get('original_name', '') if form else '' }}">
+    </div>
+
+    <div class="form-row form-row-split">
+        <div>
+            <label for="category">Turkum *</label>
+            <select id="category" name="category" required>
+                {% for key, label in categories.items() %}
+                <option value="{{ key }}" {{ 'selected' if form and form.get('category') == key else '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="status">Holat *</label>
+            <select id="status" name="status" required>
+                <option value="published" {{ 'selected' if form and form.get('status', 'published') == 'published' else '' }}>Nashr qilingan</option>
+                <option value="draft" {{ 'selected' if form and form.get('status') == 'draft' else '' }}>Qoralama</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="tagline">Shior (tagline)</label>
+        <input type="text" id="tagline" name="tagline" value="{{ form.get('tagline', '') if form else '' }}">
+    </div>
+
+    <div class="form-row">
+        <label for="summary">Tavsif *</label>
+        <textarea id="summary" name="summary" rows="5" required>{{ form.get('summary', '') if form else '' }}</textarea>
+    </div>
+
+    <div class="form-row form-row-split">
+        <div>
+            <label for="year">Yil</label>
+            <input type="number" id="year" name="year" value="{{ form.get('year', '') if form else '' }}">
+        </div>
+        <div>
+            <label for="release_date">Chiqarilgan sana (YYYY-MM-DD)</label>
+            <input type="text" id="release_date" name="release_date" value="{{ form.get('release_date', '') if form else '' }}">
+        </div>
+    </div>
+
+    <div class="form-row form-row-split">
+        <div>
+            <label for="runtime">Davomiyligi (daqiqa)</label>
+            <input type="number" id="runtime" name="runtime" value="{{ form.get('runtime', '') if form else '' }}">
+        </div>
+        <div>
+            <label for="country">Mamlakat</label>
+            <input type="text" id="country" name="country" value="{{ form.get('country', '') if form else '' }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="director">Rejissyor</label>
+        <input type="text" id="director" name="director" value="{{ form.get('director', '') if form else '' }}">
+    </div>
+
+    <div class="form-row">
+        <label for="trailer_url">Treyler havolasi (YouTube)</label>
+        <input type="text" id="trailer_url" name="trailer_url" value="{{ form.get('trailer_url', '') if form else '' }}">
+    </div>
+
+    <div class="form-row form-row-split">
+        <div>
+            <label for="quality_score">Sifat bahosi (0–10) *</label>
+            <input type="number" id="quality_score" name="quality_score" step="0.1" min="0" max="10"
+                   value="{{ form.get('quality_score', 0) if form else 0 }}" required>
+        </div>
+        <div>
+            <label for="quality_label">Sifat belgisi *</label>
+            <input type="text" id="quality_label" name="quality_label" placeholder="masalan: Full HD"
+                   value="{{ form.get('quality_label', 'HD') if form else 'HD' }}" required>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="poster_note">Emoji / vizual belgi (poster bo'lmasa ko'rinadi)</label>
+        <input type="text" id="poster_note" name="poster_note" placeholder="🎬" value="{{ form.get('poster_note', '') if form else '' }}">
+    </div>
+
+    <div class="form-row">
+        <label>Janrlar</label>
+        <div class="checkbox-grid" id="genre-checkboxes">
+            {% for g in genres %}
+            <label><input type="checkbox" name="genre_ids" value="{{ g['id'] }}" {{ 'checked' if g['id'] in selected_genre_ids else '' }}> {{ g['name'] }}</label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="cast_text">Aktyorlar</label>
+        <textarea id="cast_text" name="cast_text" rows="4" placeholder="Timothee Chalamet | Paul Atreides&#10;Zendaya | Chani">{{ cast_text }}</textarea>
+        <p class="form-hint">Har bir qatorga bitta aktyor: <code>Aktyor ismi | Rol nomi</code></p>
+    </div>
+
+    <div class="form-row">
+        <label for="links_text">Qayerda tomosha qilish mumkin</label>
+        <textarea id="links_text" name="links_text" rows="4" placeholder="Netflix | https://www.netflix.com&#10;Crunchyroll | https://www.crunchyroll.com">{{ links_text }}</textarea>
+        <p class="form-hint">Har bir qatorga bitta platforma: <code>Platforma nomi | https://havola</code></p>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Saqlash</button>
+        <a href="{{ url_for('admin.movies_list') }}" class="btn-ghost">Bekor qilish</a>
+    </div>
+</form>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

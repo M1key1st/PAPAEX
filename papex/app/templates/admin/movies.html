@@ -1,0 +1,81 @@
+{% extends "admin/layout.html" %}
+{% block title %}Kontent — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Kontent</h1>
+    <div class="admin-bar-actions">
+        <a href="{{ url_for('admin.movie_create') }}" class="btn-primary">+ Yangi kontent</a>
+    </div>
+</section>
+
+<form class="filter-form" method="get">
+    <div>
+        <label for="q">Qidirish</label>
+        <input type="text" id="q" name="q" value="{{ q }}">
+    </div>
+    <div>
+        <label for="category">Turkum</label>
+        <select id="category" name="category">
+            <option value="">Barchasi</option>
+            {% for key, label in categories.items() %}
+            <option value="{{ key }}" {{ 'selected' if category == key else '' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="status">Holat</label>
+        <select id="status" name="status">
+            <option value="">Barchasi</option>
+            <option value="published" {{ 'selected' if status == 'published' else '' }}>Nashr qilingan</option>
+            <option value="draft" {{ 'selected' if status == 'draft' else '' }}>Qoralama</option>
+        </select>
+    </div>
+    <div class="filter-submit">
+        <button type="submit" class="btn-primary">Filtrlash</button>
+    </div>
+</form>
+
+<section class="admin-table-wrap">
+    {% if pagination.items %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nom</th><th>Turkum</th><th>Yil</th><th>Baho</th><th>Ko'rishlar</th><th>Holat</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in pagination.items %}
+            <tr>
+                <td>{{ t['poster_note'] or '' }} {{ t['name'] }}</td>
+                <td><span class="tag tag-{{ t['category'] }}">{{ categories[t['category']] }}</span></td>
+                <td class="num">{{ t['year'] or '—' }}</td>
+                <td class="num">{{ t['quality_score'] }}</td>
+                <td class="num">{{ t['views_count'] }}</td>
+                <td>
+                    {% if t['status'] == 'published' %}<span class="badge badge-success">Nashrda</span>
+                    {% else %}<span class="badge badge-warning">Qoralama</span>{% endif %}
+                </td>
+                <td class="admin-row-actions">
+                    <a href="{{ url_for('public.title_detail', slug=t['slug']) }}" target="_blank">Ko'rish</a>
+                    <a href="{{ url_for('admin.movie_edit', title_id=t['id']) }}">Tahrirlash</a>
+                    <form method="post" action="{{ url_for('admin.movie_delete', title_id=t['id']) }}"
+                          onsubmit="return confirm('\'{{ t['name'] }}\' o\'chirilsinmi?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="link-danger">O'chirish</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Hech qanday yozuv topilmadi.</p>
+    {% endif %}
+</section>
+
+{% set endpoint = 'admin.movies_list' %}
+{% set extra_args = {'category': category, 'status': status, 'q': q} %}
+{% include "_pagination.html" %}
+
+{% endblock %}

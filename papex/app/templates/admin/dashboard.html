@@ -1,0 +1,101 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ site_name }} Dashboard{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">{{ site_name }} Dashboard</h1>
+    <a href="{{ url_for('admin.movie_create') }}" class="btn-primary">+ Yangi kontent</a>
+</section>
+
+<div class="stat-grid">
+    <div class="stat-card"><p class="stat-num">{{ stats.total_titles }}</p><p class="stat-label">Jami kontent</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_views }}</p><p class="stat-label">Jami ko'rishlar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_likes }}</p><p class="stat-label">Jami like</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_bookmarks }}</p><p class="stat-label">Bookmarklar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_users }}</p><p class="stat-label">Xodimlar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_articles }}</p><p class="stat-label">Maqolalar</p></div>
+</div>
+
+<!-- Server holati -->
+{% if health %}
+<h2>Server Holati</h2>
+<div class="stat-grid" style="margin-bottom: 32px;">
+    <div class="stat-card">
+        <p class="stat-num" style="color: {{ 'green' if health.database.status == 'ok' else 'red' }}">
+            {{ 'OK' if health.database.status == 'ok' else 'XATO' }}
+        </p>
+        <p class="stat-label">Database</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-num" style="color: {{ 'green' if health.scheduler.status == 'ok' else 'orange' if health.scheduler.status == 'warning' else 'red' }}">
+            {{ 'OK' if health.scheduler.status == 'ok' else 'TO\'XTAGAN' if health.scheduler.status == 'warning' else 'XATO' }}
+        </p>
+        <p class="stat-label">Scheduler</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-num" style="color: {{ 'green' if health.tmdb.status == 'ok' else 'gray' if health.tmdb.status == 'disabled' else 'red' }}">
+            {{ 'OK' if health.tmdb.status == 'ok' else 'O\'CHIRILGAN' if health.tmdb.status == 'disabled' else 'XATO' }}
+        </p>
+        <p class="stat-label">TMDB API</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-num" style="color: {{ 'green' if health.cache.status == 'ok' else 'red' }}">
+            {{ health.cache.posters }}/{{ health.cache.backends }}
+        </p>
+        <p class="stat-label">Cache (poster/backdrop)</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Oxirgi import -->
+{% if stats.last_import %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="card-title">Oxirgi TMDB Import</h6>
+        <p class="mb-1">
+            Sana: {{ stats.last_import.run_at[:16] if stats.last_import.run_at else 'Noma\'lum' }} |
+            Topilgan: {{ stats.last_import.items_found }} |
+            Qo'shilgan: <span class="text-success">{{ stats.last_import.items_added }}</span> |
+            Xato: <span class="text-danger">{{ stats.last_import.errors }}</span>
+        </p>
+        <a href="{{ url_for('admin.auto_import_dashboard') }}" class="btn btn-outline-primary btn-sm mt-2">Import boshqaruvi</a>
+    </div>
+</div>
+{% endif %}
+
+<h2>Turkumlar bo'yicha</h2>
+<div class="chip-row" style="margin-bottom: 32px;">
+    {% for cat, label in categories.items() %}
+    <span class="chip">{{ label }}: {{ stats.by_category.get(cat, 0) }}</span>
+    {% endfor %}
+</div>
+
+<h2>Eng ko'p ko'rilganlar</h2>
+<table class="admin-table" style="margin-bottom: 32px;">
+    <thead><tr><th>Nom</th><th>Ko'rishlar</th></tr></thead>
+    <tbody>
+        {% for t in stats.top_viewed %}
+        <tr><td><a href="{{ url_for('admin.movie_edit', title_id=t['id']) }}">{{ t['name'] }}</a></td><td class="num">{{ t['views_count'] }}</td></tr>
+        {% else %}
+        <tr><td colspan="2" class="empty">Hozircha ma'lumot yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>So'nggi qo'shilganlar</h2>
+<table class="admin-table">
+    <thead><tr><th>Nom</th><th>Turkum</th><th>Sana</th></tr></thead>
+    <tbody>
+        {% for t in stats.recent_titles %}
+        <tr>
+            <td><a href="{{ url_for('admin.movie_edit', title_id=t['id']) }}">{{ t['name'] }}</a></td>
+            <td><span class="tag tag-{{ t['category'] }}">{{ categories[t['category']] }}</span></td>
+            <td class="num">{{ (t['published_at'] or '')[:10] }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="empty">Hozircha ma'lumot yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

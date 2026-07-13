@@ -1,0 +1,102 @@
+{% extends "admin/layout.html" %}
+{% block title %}Statistika — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Statistika</h1>
+</section>
+
+<div class="stat-grid">
+    <div class="stat-card"><p class="stat-num">{{ stats.total_titles }}</p><p class="stat-label">Jami kontent</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_views }}</p><p class="stat-label">Jami ko'rishlar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_likes }}</p><p class="stat-label">Jami like</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_bookmarks }}</p><p class="stat-label">Bookmarklar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_articles }}</p><p class="stat-label">Maqolalar</p></div>
+    <div class="stat-card"><p class="stat-num">{{ stats.total_users }}</p><p class="stat-label">Foydalanuvchilar</p></div>
+</div>
+
+<!-- Kunlik trafik -->
+{% if daily_stats %}
+<h2>Kunlik Trafik (oxirgi 30 kun)</h2>
+<div class="table-responsive mb-4">
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>Sana</th>
+                <th>Sahifa ko'rishlar</th>
+                <th>Noyob tashriflar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in daily_stats %}
+            <tr>
+                <td>{{ stat.date }}</td>
+                <td>{{ stat.page_views }}</td>
+                <td>{{ stat.unique_visitors }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<h2>Turkumlar bo'yicha taqsimot</h2>
+<table class="admin-table" style="margin-bottom: 32px;">
+    <thead><tr><th>Turkum</th><th>Soni</th></tr></thead>
+    <tbody>
+        {% for cat, label in categories.items() %}
+        <tr><td>{{ label }}</td><td class="num">{{ stats.by_category.get(cat, 0) }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Eng ko'p ko'rilgan -->
+{% if top_viewed %}
+<h2>Eng ko'p ko'rilgan kinolar</h2>
+<table class="admin-table" style="margin-bottom: 32px;">
+    <thead><tr><th>Nom</th><th>Ko'rishlar</th><th>Likelar</th></tr></thead>
+    <tbody>
+        {% for t in top_viewed %}
+        <tr>
+            <td><a href="{{ url_for('admin.movie_edit', title_id=t.id) }}">{{ t.name }}</a></td>
+            <td class="num">{{ t.views_count }}</td>
+            <td class="num">{{ t.likes_count }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="empty">Ma'lumot yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Eng mashhur janrlar -->
+{% if popular_genres %}
+<h2>Eng mashhur janrlar</h2>
+<table class="admin-table" style="margin-bottom: 32px;">
+    <thead><tr><th>Janr</th><th>Kontent soni</th></tr></thead>
+    <tbody>
+        {% for g in popular_genres %}
+        <tr>
+            <td><a href="{{ url_for('public.search', genre=g.slug) }}">{{ g.name }}</a></td>
+            <td class="num">{{ g.count }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2" class="empty">Ma'lumot yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>Eng ko'p ko'rilgan 5 ta</h2>
+<table class="admin-table">
+    <thead><tr><th>Nom</th><th>Ko'rishlar</th></tr></thead>
+    <tbody>
+        {% for t in stats.top_viewed %}
+        <tr><td>{{ t['name'] }}</td><td class="num">{{ t['views_count'] }}</td></tr>
+        {% else %}
+        <tr><td colspan="2" class="empty">Ma'lumot yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

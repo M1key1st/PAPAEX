@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{% if search_query %}"{{ search_query }}" bo'yicha qidiruv{% else %}Qidiruv{% endif %} — {{ site_name }}{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <p class="eyebrow">Qidiruv</p>
+    <h1>{% if search_query %}"{{ search_query }}" bo'yicha natijalar{% else %}Kontent qidirish{% endif %}</h1>
+    <p class="hero-sub">Nom, tavsif, janr, aktyor, rejissyor, mamlakat va yil bo'yicha qidiring.</p>
+</section>
+
+<form class="filter-form" method="get" action="{{ url_for('public.search') }}">
+    <div>
+        <label for="q">Nom / tavsif</label>
+        <input type="text" id="q" name="q" value="{{ search_query }}">
+    </div>
+    <div>
+        <label for="category">Turkum</label>
+        <select id="category" name="category">
+            <option value="">Barchasi</option>
+            {% for key, label in categories.items() %}
+            <option value="{{ key }}" {{ 'selected' if filters.category == key else '' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="genre">Janr</label>
+        <select id="genre" name="genre">
+            <option value="">Barchasi</option>
+            {% for g in all_genres %}
+            <option value="{{ g['slug'] }}" {{ 'selected' if filters.genre == g['slug'] else '' }}>{{ g['name'] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="actor">Aktyor</label>
+        <input type="text" id="actor" name="actor" value="{{ filters.actor or '' }}">
+    </div>
+    <div>
+        <label for="director">Rejissyor</label>
+        <input type="text" id="director" name="director" value="{{ filters.director or '' }}">
+    </div>
+    <div>
+        <label for="country">Mamlakat</label>
+        <select id="country" name="country">
+            <option value="">Barchasi</option>
+            {% for c in all_countries %}
+            <option value="{{ c }}" {{ 'selected' if filters.country == c else '' }}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="year">Yil</label>
+        <select id="year" name="year">
+            <option value="">Barchasi</option>
+            {% for y in all_years %}
+            <option value="{{ y }}" {{ 'selected' if filters.year == y else '' }}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-submit">
+        <button type="submit" class="btn-primary">Qidirish</button>
+    </div>
+</form>
+
+{% if pagination is none %}
+<p class="empty">Qidiruv uchun kamida bitta filtr kiriting.</p>
+{% else %}
+<section class="grid">
+    {% for t in pagination.items %}
+        {% include "_title_card.html" %}
+    {% else %}
+    <p class="empty">Hech narsa topilmadi. Boshqa so'z yoki filtr bilan urinib ko'ring.</p>
+    {% endfor %}
+</section>
+
+{% set endpoint = 'public.search' %}
+{% set extra_args = {'q': search_query, 'category': filters.category, 'genre': filters.genre, 'actor': filters.actor, 'director': filters.director, 'country': filters.country, 'year': filters.year} %}
+{% include "_pagination.html" %}
+{% endif %}
+
+{% endblock %}

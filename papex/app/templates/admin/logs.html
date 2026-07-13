@@ -1,0 +1,29 @@
+{% extends "admin/layout.html" %}
+{% block title %}Loglar — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Faoliyat loglari</h1>
+</section>
+
+<table class="admin-table">
+    <thead><tr><th>Vaqt</th><th>Foydalanuvchi</th><th>Amal</th><th>Obyekt</th><th>IP</th></tr></thead>
+    <tbody>
+        {% for log in pagination.items %}
+        <tr>
+            <td class="num">{{ log['created_at'] }}</td>
+            <td>{{ log['actor'] }}</td>
+            <td><span class="badge">{{ log['action'] }}</span></td>
+            <td>{{ log['target'] or '—' }}</td>
+            <td class="num">{{ log['ip'] or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty">Loglar yo'q.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% set endpoint = 'admin.logs' %}
+{% include "_pagination.html" %}
+
+{% endblock %}

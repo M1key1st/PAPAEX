@@ -1,0 +1,94 @@
+{% extends "admin/layout.html" %}
+{% block title %}Maqolalar — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Maqolalar</h4>
+    <div class="d-flex gap-2">
+        <form method="POST" action="{{ url_for('admin.articles_generate_missing') }}">
+            <button type="submit" class="btn btn-primary btn-sm">Yo'q maqolalarni generatsiya qilish</button>
+        </form>
+        <div class="btn-group btn-group-sm">
+            <a href="{{ url_for('admin.articles_list') }}" class="btn btn-outline-secondary {{ 'active' if not status }}">Hammasi</a>
+            <a href="{{ url_for('admin.articles_list', status='draft') }}" class="btn btn-outline-secondary {{ 'active' if status == 'draft' }}>Qoralama</a>
+            <a href="{{ url_for('admin.articles_list', status='published') }}" class="btn btn-outline-secondary {{ 'active' if status == 'published' }}>Nashr etilgan</a>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Sarlavha</th>
+                <th>Kino</th>
+                <th>Holat</th>
+                <th>Yaratilgan</th>
+                <th>Amallar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in pagination.items %}
+            <tr>
+                <td>{{ article.id }}</td>
+                <td>{{ article.title[:50] }}{% if article.title|length > 50 %}...{% endif %}</td>
+                <td>
+                    <a href="{{ url_for('public.title_detail', slug=article.movie_slug) }}">
+                        {{ article.movie_name }}
+                    </a>
+                </td>
+                <td>
+                    {% if article.status == 'published' %}
+                        <span class="badge bg-success">Nashr</span>
+                    {% else %}
+                        <span class="badge bg-warning">Qoralama</span>
+                    {% endif %}
+                </td>
+                <td>{{ article.created_at[:10] if article.created_at else '' }}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('admin.article_edit', article_id=article.id) }}" class="btn btn-outline-primary">Tahrirlash</a>
+                        {% if article.status == 'draft' %}
+                        <form method="POST" action="{{ url_for('admin.article_publish', article_id=article.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Nashr etish</button>
+                        </form>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('admin.article_regenerate', article_id=article.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-outline-warning btn-sm">Qayta generatsiya</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.article_delete', article_id=article.id) }}" style="display:inline;"
+                              onsubmit="return confirm('O'chirishni xohlaysizmi?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">O'chirish</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted">Maqolalar topilmadi</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav>
+    <ul class="pagination pagination-sm justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item"><a class="page-link" href="?page={{ pagination.prev_num }}{% if status %}&status={{ status }}{% endif %}">&laquo;</a></li>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+            <li class="page-item {{ 'active' if p == pagination.page }}">
+                <a class="page-link" href="?page={{ p }}{% if status %}&status={{ status }}{% endif %}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ pagination.next_num }}{% if status %}&status={{ status }}{% endif %}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

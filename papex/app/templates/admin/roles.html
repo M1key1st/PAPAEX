@@ -1,0 +1,30 @@
+{% extends "admin/layout.html" %}
+{% block title %}Rollar — Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+
+<section class="admin-bar">
+    <h1 class="admin-heading">Rollar va ruxsatlar</h1>
+</section>
+
+<table class="admin-table">
+    <thead><tr><th>Rol</th><th>Ruxsatlar</th></tr></thead>
+    <tbody>
+        {% for r in roles %}
+        <tr>
+            <td><strong>{{ r['label'] }}</strong> <span class="badge">{{ r['name'] }}</span></td>
+            <td>
+                {% if r['permissions'] == 'all' %}
+                <span class="badge badge-success">Barcha ruxsatlar</span>
+                {% else %}
+                {% for p in r['permissions'].split(',') %}
+                <span class="badge">{{ p }}</span>
+                {% endfor %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p class="form-hint" style="margin-top: 16px;">Rollar tizim darajasida belgilangan. Yangi foydalanuvchini "Foydalanuvchilar" bo'limidan qo'shishda tegishli rolni tanlang.</p>
+
+{% endblock %}

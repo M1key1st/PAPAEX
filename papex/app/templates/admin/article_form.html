@@ -1,0 +1,62 @@
+{% extends "admin/layout.html" %}
+{% block title %}Maqola Tahrirlash — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Maqola Tahrirlash: {{ article.movie_name }}</h4>
+    <a href="{{ url_for('admin.articles_list') }}" class="btn btn-outline-secondary btn-sm">Orqaga</a>
+</div>
+
+<form method="POST">
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label class="form-label">Sarlavha</label>
+                <input type="text" name="title" class="form-control" value="{{ article.title }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Qisqa tavsif</label>
+                <textarea name="summary" class="form-control" rows="3">{{ article.summary }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">To'liq maqola</label>
+                <textarea name="content" class="form-control" rows="15">{{ article.content }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">SEO tavsif</label>
+                <input type="text" name="seo_description" class="form-control" value="{{ article.seo_description }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Telegram post matni</label>
+                <textarea name="telegram_text" class="form-control" rows="5">{{ article.telegram_text }}</textarea>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Maqola holati</h6>
+                    <select name="status" class="form-select mb-3">
+                        <option value="draft" {{ 'selected' if article.status == 'draft' }}>Qoralama</option>
+                        <option value="published" {{ 'selected' if article.status == 'published' }}>Nashr etilgan</option>
+                    </select>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Saqlash</button>
+                    </div>
+
+                    <hr>
+
+                    <small class="text-muted">
+                        Yaratilgan: {{ article.created_at[:16] if article.created_at else '' }}<br>
+                        Yangilangan: {{ article.updated_at[:16] if article.updated_at else '' }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

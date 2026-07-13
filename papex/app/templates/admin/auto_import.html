@@ -1,0 +1,87 @@
+{% extends "admin/layout.html" %}
+{% block title %}Avtomatik Import — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Avtomatik TMDB Import</h4>
+    <form method="POST" action="{{ url_for('admin.auto_import_run') }}" class="d-flex gap-2">
+        <select name="source" class="form-select form-select-sm" style="width: auto;">
+            <option value="">Barcha manbalar</option>
+            <option value="trending">Trending</option>
+            <option value="popular">Popular</option>
+            <option value="top_rated">Top Rated</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="tv">TV Shows</option>
+            <option value="anime">Anime</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Hozir ishga tushirish</button>
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Oxirgi ishga tushirish</h5>
+                <p class="card-text fs-4">
+                    {% if stats.last_run %}
+                        {{ stats.last_run.run_at[:16] if stats.last_run.run_at else 'Noma\'lum' }}
+                    {% else %}
+                        Hali ishga tushirilmagan
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Bugun qo'shilgan</h5>
+                <p class="card-text fs-4">
+                    {% set total_added = stats.today_stats|sum(attribute='total_added') if stats.today_stats else 0 %}
+                    {{ total_added }} ta kino
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Navbatda</h5>
+                <p class="card-text fs-4">{{ stats.queue_pending }} ta</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if stats.last_run %}
+<div class="card mb-4">
+    <div class="card-header">Oxirgi import natijalari</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Manba</th>
+                        <th>Topilgan</th>
+                        <th>Qo'shilgan</th>
+                        <th>O'tkazib yuborilgan</th>
+                        <th>Xatolar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ stats.last_run.source }}</td>
+                        <td>{{ stats.last_run.items_found }}</td>
+                        <td class="text-success">{{ stats.last_run.items_added }}</td>
+                        <td>{{ stats.last_run.items_skipped }}</td>
+                        <td class="text-danger">{{ stats.last_run.errors }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<a href="{{ url_for('admin.auto_import_log') }}" class="btn btn-outline-secondary">Import tarixini ko'rish</a>
+{% endblock %}

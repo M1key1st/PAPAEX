@@ -1,0 +1,98 @@
+{% extends "admin/layout.html" %}
+{% block title %}Backup — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Backup Boshqaruvi</h4>
+    <form method="POST" action="{{ url_for('admin.backup_create') }}">
+        <button type="submit" class="btn btn-primary btn-sm">Yangi Backup Yaratish</button>
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Jami Backup</h6>
+                <p class="card-text fs-4">{{ stats.total_backups }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Jami Hajm</h6>
+                <p class="card-text fs-4">
+                    {% if stats.total_size_bytes > 1048576 %}
+                        {{ "%.1f"|format(stats.total_size_bytes / 1048576) }} MB
+                    {% elif stats.total_size_bytes > 1024 %}
+                        {{ "%.1f"|format(stats.total_size_bytes / 1024) }} KB
+                    {% else %}
+                        {{ stats.total_size_bytes }} B
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Oxirgi Backup</h6>
+                <p class="card-text fs-4">
+                    {% if stats.last_backup %}
+                        {{ stats.last_backup.created_at[:10] if stats.last_backup.created_at else 'Noma\'lum' }}
+                    {% else %}
+                        Hali yo'q
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fayl nomi</th>
+                <th>Hajm</th>
+                <th>Sana</th>
+                <th>Amallar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for backup in backups %}
+            <tr>
+                <td>{{ backup.id }}</td>
+                <td>{{ backup.filename }}</td>
+                <td>
+                    {% if backup.size_bytes > 1048576 %}
+                        {{ "%.1f"|format(backup.size_bytes / 1048576) }} MB
+                    {% elif backup.size_bytes > 1024 %}
+                        {{ "%.1f"|format(backup.size_bytes / 1024) }} KB
+                    {% else %}
+                        {{ backup.size_bytes }} B
+                    {% endif %}
+                </td>
+                <td>{{ backup.created_at[:16] if backup.created_at else '' }}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('admin.backup_download', backup_id=backup.id) }}" class="btn btn-outline-primary">Yuklab olish</a>
+                        <form method="POST" action="{{ url_for('admin.backup_restore', backup_id=backup.id) }}" style="display:inline;"
+                              onsubmit="return confirm('Database ni tiklashni xohlaysizmi? Joriy database backup bilan almashtiriladi.');">
+                            <button type="submit" class="btn btn-outline-warning btn-sm">Tiklash</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.backup_delete', backup_id=backup.id) }}" style="display:inline;"
+                              onsubmit="return confirm('Backup ni o\'chirishni xohlaysizmi?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">O'chirish</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Backuplar topilmadi</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

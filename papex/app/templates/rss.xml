@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+    <title>{{ site_name }}</title>
+    <link>{{ site_url }}</link>
+    <description>{{ site_description }}</description>
+    <language>uz</language>
+{% for t in titles %}
+    <item>
+        <title>{{ t['name'] }}</title>
+        <link>{{ site_url }}{{ url_for('public.title_detail', slug=t['slug']) }}</link>
+        <guid>{{ site_url }}{{ url_for('public.title_detail', slug=t['slug']) }}</guid>
+        <description><![CDATA[{{ t['summary'] }}]]></description>
+        <pubDate>{{ t['published_at'] }}</pubDate>
+        <category>{{ t['category'] }}</category>
+    </item>
+{% endfor %}
+</channel>
+</rss>

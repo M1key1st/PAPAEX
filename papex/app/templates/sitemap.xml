@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{% for u in static_urls %}
+    <url>
+        <loc>{{ u.loc }}</loc>
+        <changefreq>{{ u.changefreq }}</changefreq>
+        <priority>{{ u.priority }}</priority>
+    </url>
+{% endfor %}
+{% for u in title_urls %}
+    <url>
+        <loc>{{ u.loc }}</loc>
+        {% if u.lastmod %}<lastmod>{{ u.lastmod }}</lastmod>{% endif %}
+        <changefreq>{{ u.changefreq }}</changefreq>
+        <priority>{{ u.priority }}</priority>
+    </url>
+{% endfor %}
+</urlset>

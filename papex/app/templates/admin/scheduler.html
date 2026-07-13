@@ -1,0 +1,66 @@
+{% extends "admin/layout.html" %}
+{% block title %}Scheduler — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Scheduler Boshqaruvi</h4>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Holat</h6>
+                <p class="card-text fs-4">
+                    {% if scheduler.running %}
+                        <span class="badge bg-success">Ishlayapti</span>
+                    {% else %}
+                        <span class="badge bg-danger">To'xtagan</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Vazifalar soni</h6>
+                <p class="card-text fs-4">{{ scheduler.jobs|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Vazifalar ro'yxati</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nomi</th>
+                        <th>Keyingi ishga tushirish</th>
+                        <th>Amal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in scheduler.jobs %}
+                    <tr>
+                        <td><code>{{ job.id }}</code></td>
+                        <td>{{ job.name }}</td>
+                        <td>{{ job.next_run[:19] if job.next_run else 'Noma\'lum' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.scheduler_trigger', job_id=job.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">Hozir ishga tushirish</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">Vazifalar topilmadi</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

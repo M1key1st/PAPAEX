@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ site_name }} — Movies, Anime & Entertainment Reimagined{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}{{ site_description }}{% endblock %}">
+<link rel="canonical" href="{% block canonical %}{{ request.url_root.rstrip('/') }}{{ request.path }}{% endblock %}">
+
+<meta property="og:type" content="{% block og_type %}website{% endblock %}">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{% block og_title %}{{ site_name }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ site_description }}{% endblock %}">
+<meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+{% block og_image %}{% endblock %}
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% block twitter_title %}{{ site_name }}{% endblock %}">
+<meta name="twitter:description" content="{% block twitter_description %}{{ site_description }}{% endblock %}">
+
+{% block structured_data %}{% endblock %}
+
+<!-- Open Graph dynamic teglar (view dan kelgan) -->
+{% if og is defined and og %}
+{% for key, value in og.items() %}
+<meta property="{{ key }}" content="{{ value }}">
+{% endfor %}
+{% endif %}
+
+<!-- Google AdSense -->
+{% if ads_enabled is defined and ads_enabled and adsense_script %}
+{{ adsense_script|safe }}
+{% endif %}
+
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="filmstrip"></div>
+
+<header class="site-header">
+    <div class="wrap header-inner">
+        <a href="{{ url_for('public.home') }}" class="logo">{{ site_name }}<span>.</span></a>
+        <nav class="main-nav">
+            <a href="{{ url_for('public.home') }}" class="{{ 'active' if active_category is none and is_home is defined else '' }}">Barchasi</a>
+            {% for key, label in categories.items() %}
+            <a href="{{ url_for('public.by_category', category=key) }}" class="{{ 'active' if active_category == key else '' }}">{{ label }}</a>
+            {% endfor %}
+            <a href="{{ url_for('public.articles') }}">Maqolalar</a>
+        </nav>
+        <form class="search-form" action="{{ url_for('public.search') }}" method="get">
+            <input type="text" name="q" placeholder="Qidirish..." value="{{ search_query|default('') }}" aria-label="Qidirish">
+            <button type="submit">🔍</button>
+        </form>
+    </div>
+</header>
+
+<!-- Header Ad -->
+{% if ads_enabled is defined and ads_enabled and ad_header %}
+<div class="ad-container ad-header">
+    {{ ad_header|safe }}
+</div>
+{% endif %}
+
+<main class="wrap">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flash-messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Sidebar Ad -->
+{% if ads_enabled is defined and ads_enabled and ad_sidebar %}
+<aside class="ad-sidebar">
+    {{ ad_sidebar|safe }}
+</aside>
+{% endif %}
+
+<footer class="site-footer">
+    <div class="wrap">
+        <p>{{ site_description }}</p>
+        <p class="footer-note">{{ footer_text }}</p>
+        <p class="footer-admin">
+            {% if current_user is defined and current_user.is_authenticated %}
+            <a href="{{ url_for('admin.dashboard') }}">Admin panel</a> &middot;
+            <a href="{{ url_for('auth.logout') }}">Chiqish</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}">Admin</a>
+            {% endif %}
+        </p>
+    </div>
+</footer>
+
+<div class="filmstrip filmstrip-bottom"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

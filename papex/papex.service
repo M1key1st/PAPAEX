@@ -1,0 +1,16 @@
+[Unit]
+Description=PAPEX Web Application
+After=network.target
+
+[Service]
+User=papex
+Group=papex
+WorkingDirectory=/opt/papex
+Environment="PATH=/opt/papex/venv/bin"
+Environment="FLASK_ENV=production"
+ExecStart=/opt/papex/venv/bin/gunicorn --config gunicorn.conf.py run:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

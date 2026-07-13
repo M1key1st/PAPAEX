@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ site_name }} Admin — Kirish{% endblock %}
+{% block content %}
+
+<section class="admin-auth">
+    <h1 class="admin-heading">{{ site_name }} Admin</h1>
+    <form class="admin-login-form" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="username">Login yoki email</label>
+        <input type="text" id="username" name="username" autofocus required>
+        <label for="password">Parol</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit" class="btn-primary">Kirish</button>
+    </form>
+    <p class="auth-hint">Faqat ro'yxatdan o'tgan xodimlar (Admin / Editor / Moderator) kira oladi.</p>
+</section>
+
+{% endblock %}

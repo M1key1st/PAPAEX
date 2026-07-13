@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.movies_list') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.movie') else '' }}">🎬 Kontent</a>
+        <a href="{{ url_for('admin.genres') }}" class="{{ 'active' if request.endpoint == 'admin.genres' else '' }}">🏷️ Janrlar</a>
+        <a href="{{ url_for('admin.auto_import_dashboard') }}" class="{{ 'active' if request.endpoint and 'auto_import' in request.endpoint else '' }}">🔄 Auto Import</a>
+        <a href="{{ url_for('admin.articles_list') }}" class="{{ 'active' if request.endpoint and 'article' in request.endpoint else '' }}">📰 Maqolalar</a>
+        {% if current_user.role_name == 'admin' %}
+        <a href="{{ url_for('admin.users') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.user') else '' }}">👤 Foydalanuvchilar</a>
+        <a href="{{ url_for('admin.roles') }}" class="{{ 'active' if request.endpoint == 'admin.roles' else '' }}">🔑 Rollar</a>
+        <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if request.endpoint == 'admin.settings' else '' }}">⚙️ Sozlamalar</a>
+        <a href="{{ url_for('admin.backups_list') }}" class="{{ 'active' if request.endpoint and 'backup' in request.endpoint else '' }}">💾 Backup</a>
+        <a href="{{ url_for('admin.scheduler_page') }}" class="{{ 'active' if request.endpoint == 'admin.scheduler_page' else '' }}">⏰ Scheduler</a>
+        {% endif %}
+        <a href="{{ url_for('admin.logs') }}" class="{{ 'active' if request.endpoint == 'admin.logs' else '' }}">🧾 Loglar</a>
+        <a href="{{ url_for('admin.stats_page') }}" class="{{ 'active' if request.endpoint == 'admin.stats_page' else '' }}">📈 Statistika</a>
+        <a href="{{ url_for('public.home') }}">🌐 Saytga qaytish</a>
+        <a href="{{ url_for('auth.logout') }}">🚪 Chiqish</a>
+    </aside>
+    <div class="admin-main">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
